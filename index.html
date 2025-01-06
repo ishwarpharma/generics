@@ -162,25 +162,12 @@
         }
 
         function search(input) {
-            const terms = input.split(' ').filter(term => term);
-
-            const results = jsonData.filter(item => {
-                return terms.every(term => {
-                    return ['BRAND', 'COMPANY', 'CONTENT'].some(key => 
-                        item[key] && item[key].toString().toLowerCase().includes(term)
-                    );
-                });
-            });
+            const results = jsonData.filter(item => 
+                item.SEARCH && item.SEARCH.toString().toLowerCase().includes(input)
+            );
 
             results.forEach(result => {
-                result.totalMatches = terms.reduce((acc, term) => {
-                    return acc + ['BRAND', 'COMPANY', 'CONTENT'].reduce((count, key) => {
-                        if (result[key] && result[key].toString().toLowerCase().includes(term)) {
-                            count += (result[key].toString().toLowerCase().match(new RegExp(term, 'g')) || []).length;
-                        }
-                        return count;
-                    }, 0);
-                }, 0);
+                result.totalMatches = (result.SEARCH.toString().toLowerCase().match(new RegExp(input, 'g')) || []).length;
             });
 
             results.sort((a, b) => b.totalMatches - a.totalMatches);
@@ -195,13 +182,13 @@
             results.forEach(result => {
                 const row = resultsTable.insertRow();
 
-                row.insertCell().innerHTML = highlightMatch(result.BRAND, terms);
-                row.insertCell().innerHTML = highlightMatch(result.COMPANY, terms);
+                row.insertCell().innerHTML = highlightMatch(result.BRAND, input);
+                row.insertCell().innerHTML = highlightMatch(result.COMPANY, input);
                 row.insertCell().textContent = result.PACK || 'N/A';
                 row.insertCell().textContent = isNumeric(result.RATE) ? Number(result.RATE).toFixed(2) : 'N/A';
                 row.insertCell().textContent = isNumeric(result["Free Scheme"]) ? Number(result["Free Scheme"]).toFixed(2) : 'N/A';
                 row.insertCell().textContent = isNumeric(result.MRP) ? Number(result.MRP).toFixed(2) : 'N/A';
-                row.insertCell().innerHTML = highlightMatch(result.CONTENT, terms);
+                row.insertCell().innerHTML = highlightMatch(result.CONTENT, input);
                 row.insertCell().textContent = result.CASE || 'N/A';
                 row.insertCell().textContent = result.totalMatches;
             });
@@ -221,14 +208,10 @@
             return !isNaN(parseFloat(value)) && isFinite(value);
         }
 
-        function highlightMatch(text, terms) {
+        function highlightMatch(text, input) {
             if (!text) return 'N/A';
-            let highlightedText = text;
-            terms.forEach(term => {
-                const regex = new RegExp(`(${term})`, 'gi');
-                highlightedText = highlightedText.toString().replace(regex, '<span class="highlight">$1</span>');
-            });
-            return highlightedText;
+            const regex = new RegExp(`(${input})`, 'gi');
+            return text.toString().replace(regex, '<span class="highlight">$1</span>');
         }
     </script>
 </body>

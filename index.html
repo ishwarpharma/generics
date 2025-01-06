@@ -129,7 +129,6 @@
 
         function loadData() {
             const file = '4IshwarApp.xlsx';
-            const reader = new FileReader();
             fetch(file).then(response => {
                 if (response.ok) return response.blob();
                 else throw new Error('File not found');
@@ -142,6 +141,7 @@
                     const sheet = workbook.Sheets[sheetName];
                     jsonData = XLSX.utils.sheet_to_json(sheet);
                     document.getElementById('recordCount').textContent = `Number of records: ${jsonData.length}`;
+                    console.log('Data loaded:', jsonData); // Debugging log
                 };
                 fileReader.readAsArrayBuffer(blob);
             }).catch(error => {
@@ -153,6 +153,7 @@
         function onInputChange() {
             const searchBar = document.getElementById('searchBar');
             const input = searchBar.value.toLowerCase();
+            console.log('Input changed:', input); // Debugging log
 
             if (input.length >= 3) {
                 search(input);
@@ -162,9 +163,10 @@
         }
 
         function search(input) {
-            const results = jsonData.filter(item => 
+            const results = jsonData.filter(item =>
                 item.SEARCH && item.SEARCH.toString().toLowerCase().includes(input)
             );
+            console.log('Search results:', results); // Debugging log
 
             results.forEach(result => {
                 result.totalMatches = (result.SEARCH.toString().toLowerCase().match(new RegExp(input, 'g')) || []).length;
@@ -177,21 +179,21 @@
 
             if (results.length === 0) {
                 resultsTable.innerHTML = '<tr><td colspan="9">No records found.</td></tr>';
+            } else {
+                results.forEach(result => {
+                    const row = resultsTable.insertRow();
+
+                    row.insertCell().innerHTML = highlightMatch(result.BRAND, input);
+                    row.insertCell().innerHTML = highlightMatch(result.COMPANY, input);
+                    row.insertCell().textContent = result.PACK || 'N/A';
+                    row.insertCell().textContent = isNumeric(result.RATE) ? Number(result.RATE).toFixed(2) : 'N/A';
+                    row.insertCell().textContent = isNumeric(result["Free Scheme"]) ? Number(result["Free Scheme"]).toFixed(2) : 'N/A';
+                    row.insertCell().textContent = isNumeric(result.MRP) ? Number(result.MRP).toFixed(2) : 'N/A';
+                    row.insertCell().innerHTML = highlightMatch(result.CONTENT, input);
+                    row.insertCell().textContent = result.CASE || 'N/A';
+                    row.insertCell().textContent = result.totalMatches;
+                });
             }
-
-            results.forEach(result => {
-                const row = resultsTable.insertRow();
-
-                row.insertCell().innerHTML = highlightMatch(result.BRAND, input);
-                row.insertCell().innerHTML = highlightMatch(result.COMPANY, input);
-                row.insertCell().textContent = result.PACK || 'N/A';
-                row.insertCell().textContent = isNumeric(result.RATE) ? Number(result.RATE).toFixed(2) : 'N/A';
-                row.insertCell().textContent = isNumeric(result["Free Scheme"]) ? Number(result["Free Scheme"]).toFixed(2) : 'N/A';
-                row.insertCell().textContent = isNumeric(result.MRP) ? Number(result.MRP).toFixed(2) : 'N/A';
-                row.insertCell().innerHTML = highlightMatch(result.CONTENT, input);
-                row.insertCell().textContent = result.CASE || 'N/A';
-                row.insertCell().textContent = result.totalMatches;
-            });
         }
 
         function resetSearch() {

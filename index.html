@@ -36,7 +36,7 @@
         button {
             padding: 10px 20px;
             font-size: 14pt;
-            background-color: #28A745;
+            background-color: #4A90E2;
             color: white;
             border: none;
             border-radius: 5px;
@@ -44,7 +44,7 @@
         }
 
         button:hover {
-            background-color: #218838;
+            background-color: #357ABD;
         }
 
         table {
@@ -69,7 +69,6 @@
             padding: 12px;
             text-align: center;
             font-weight: bold;
-            color: #333333;
         }
 
         th {
@@ -82,7 +81,7 @@
         }
 
         tr:hover {
-            background-color: #DCEEFF;
+            background-color: #E1F5FE;
         }
 
         .highlight {
@@ -143,7 +142,7 @@
                 <th>Company 💼</th>
                 <th>Pack 📦</th>
                 <th>Rate 💸</th>
-                <th class="red">Net Rate 💵</th>
+                <th class="red">Free Scheme 💵</th>
                 <th>MRP 🎁</th>
                 <th>Content 🌿</th>
                 <th>Case 🗲</th>
@@ -201,6 +200,8 @@
                 });
             });
 
+            results.sort((a, b) => b.BRAND.localeCompare(a.BRAND));
+
             const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
             resultsTable.innerHTML = '';
             if (results.length === 0) {
@@ -212,9 +213,9 @@
                 row.insertCell().innerHTML = highlightMatch(result.COMPANY, terms);
                 row.insertCell().textContent = result.PACK || 'N/A';
                 row.insertCell().textContent = isNumeric(result.RATE) ? Number(result.RATE).toFixed(2) : 'N/A';
-                const netRateCell = row.insertCell();
-                netRateCell.textContent = isNumeric(result["Net Rate"]) ? Number(result["Net Rate"]).toFixed(2) : 'N/A';
-                netRateCell.classList.add('red');
+                const freeSchemeCell = row.insertCell();
+                freeSchemeCell.textContent = isNumeric(result["Free Scheme"]) ? Number(result["Free Scheme"]).toFixed(2) : 'N/A';
+                freeSchemeCell.classList.add('red');
                 row.insertCell().textContent = isNumeric(result.MRP) ? Number(result.MRP).toFixed(2) : 'N/A';
                 row.insertCell().innerHTML = highlightMatch(result.CONTENT, terms);
                 row.insertCell().textContent = result.CASE || 'N/A';

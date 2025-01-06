@@ -226,7 +226,7 @@
                 row.insertCell().textContent = result.PACK || 'N/A';
                 row.insertCell().textContent = isNumeric(result.RATE) ? Number(result.RATE).toFixed(2) : 'N/A';
                 const netRateCell = row.insertCell();
-                netRateCell.textContent = isNumeric(result["Net Rate"]) ? Number(result["Net Rate"]).toFixed(2) : 'N/A';
+                netRateCell.textContent = isNumeric(result["Free Scheme"]) ? Number(result["Free Scheme"]).toFixed(2) : 'N/A';
                 netRateCell.classList.add('red');
                 row.insertCell().textContent = isNumeric(result.MRP) ? Number(result.MRP).toFixed(2) : 'N/A';
                 row.insertCell().innerHTML = highlightMatch(result.CONTENT, terms);

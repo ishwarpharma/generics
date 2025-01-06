@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+    <!-- Meta Information -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Generic Content by Top Companies Available at Ishwar Pharma</title>
+    <title>Search Generic Content by Top Companies - Ishwar Pharma</title>
+
+    <!-- CSS Styling -->
     <style>
+        /* General Styles */
         body {
             font-family: Calibri, sans-serif;
             font-size: 10pt;
@@ -21,6 +26,13 @@
             color: #333;
         }
 
+        #recordCount {
+            margin: 10px 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Search Bar */
         #searchBar {
             width: 60%;
             padding: 12px;
@@ -32,6 +44,7 @@
             box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
         }
 
+        /* Button Styling */
         button {
             padding: 10px 20px;
             font-size: 14pt;
@@ -46,21 +59,23 @@
             background-color: #45a049;
         }
 
+        /* Table Styling */
         table {
             width: 90%;
             border-collapse: collapse;
             margin: 20px auto;
-            table-layout: auto;
-            word-wrap: break-word;
             background-color: #fff;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        table, th, td {
+        table,
+        th,
+        td {
             border: 1px solid #ddd;
         }
 
-        th, td {
+        th,
+        td {
             padding: 12px;
             text-align: center;
             font-weight: bold;
@@ -79,29 +94,30 @@
             background-color: #c6f5c6;
         }
 
+        /* Highlight Text */
         .highlight {
             background-color: yellow;
             font-weight: bold;
         }
-
-        #recordCount {
-            margin: 10px 0;
-            font-weight: bold;
-            color: #333;
-        }
-
     </style>
+
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
+
 <body>
+    <!-- Header -->
     <h1>Search Generic Content by Top Companies Available at Ishwar Pharma</h1>
     <div id="recordCount">Number of records: 0</div>
-    <br>
+
+    <!-- Search Bar -->
     <div style="position: relative; display: inline-block; width: 100%;">
         <input type="text" id="searchBar" placeholder="Start typing to search..." oninput="onInputChange()">
     </div>
     <br><br>
     <button onclick="resetSearch()">Reset</button>
+
+    <!-- Results Table -->
     <br><br>
     <table id="resultsTable">
         <thead>
@@ -118,43 +134,47 @@
             </tr>
         </thead>
         <tbody>
-            <tr><td colspan="9">Waiting for input...</td></tr>
+            <tr>
+                <td colspan="9">Waiting for input...</td>
+            </tr>
         </tbody>
     </table>
 
+    <!-- JavaScript -->
     <script>
         let jsonData = [];
 
+        // Load Excel Data
         window.onload = loadData;
 
         function loadData() {
             const file = '4IshwarApp.xlsx';
-            fetch(file).then(response => {
-                if (response.ok) return response.blob();
-                else throw new Error('File not found');
-            }).then(blob => {
-                const fileReader = new FileReader();
-                fileReader.onload = (e) => {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    jsonData = XLSX.utils.sheet_to_json(sheet);
-                    document.getElementById('recordCount').textContent = `Number of records: ${jsonData.length}`;
-                    console.log('Data loaded:', jsonData); // Debugging log
-                };
-                fileReader.readAsArrayBuffer(blob);
-            }).catch(error => {
-                console.error('Error loading file:', error);
-                document.getElementById('recordCount').textContent = 'Error loading data';
-            });
+            fetch(file)
+                .then(response => {
+                    if (response.ok) return response.blob();
+                    else throw new Error('File not found');
+                })
+                .then(blob => {
+                    const fileReader = new FileReader();
+                    fileReader.onload = (e) => {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        const sheet = workbook.Sheets[sheetName];
+                        jsonData = XLSX.utils.sheet_to_json(sheet);
+                        document.getElementById('recordCount').textContent = `Number of records: ${jsonData.length}`;
+                    };
+                    fileReader.readAsArrayBuffer(blob);
+                })
+                .catch(error => {
+                    console.error('Error loading file:', error);
+                    document.getElementById('recordCount').textContent = 'Error loading data';
+                });
         }
 
+        // Handle Search Input
         function onInputChange() {
-            const searchBar = document.getElementById('searchBar');
-            const input = searchBar.value.toLowerCase();
-            console.log('Input changed:', input); // Debugging log
-
+            const input = document.getElementById('searchBar').value.toLowerCase();
             if (input.length >= 3) {
                 search(input);
             } else {
@@ -162,61 +182,80 @@
             }
         }
 
+        // Perform Search
         function search(input) {
-            console.log('Performing search on input:', input); // Debugging log
+            const terms = input.split(' ').filter(term => term);
             const results = jsonData.filter(item => {
-                console.log('Checking item:', item); // Debugging log
-                return item.SEARCH && item.SEARCH.toString().toLowerCase().includes(input);
+                return terms.every(term => {
+                    return ['BRAND', 'COMPANY', 'CONTENT'].some(key => item[key] && item[key].toString().toLowerCase().includes(term));
+                });
             });
-            console.log('Search results:', results); // Debugging log
 
             results.forEach(result => {
-                result.totalMatches = (result.SEARCH.toString().toLowerCase().match(new RegExp(input, 'g')) || []).length;
+                result.totalMatches = terms.reduce((acc, term) => {
+                    return acc + ['BRAND', 'COMPANY', 'CONTENT'].reduce((count, key) => {
+                        if (result[key] && result[key].toString().toLowerCase().includes(term)) {
+                            count += (result[key].toString().toLowerCase().match(new RegExp(term, 'g')) || []).length;
+                        }
+                        return count;
+                    }, 0);
+                }, 0);
             });
 
             results.sort((a, b) => b.totalMatches - a.totalMatches);
-
-            const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
-            resultsTable.innerHTML = '';
-
-            if (results.length === 0) {
-                resultsTable.innerHTML = '<tr><td colspan="9">No records found.</td></tr>';
-            } else {
-                results.forEach(result => {
-                    const row = resultsTable.insertRow();
-
-                    row.insertCell().innerHTML = highlightMatch(result.BRAND, input);
-                    row.insertCell().innerHTML = highlightMatch(result.COMPANY, input);
-                    row.insertCell().textContent = result.PACK || 'N/A';
-                    row.insertCell().textContent = isNumeric(result.RATE) ? Number(result.RATE).toFixed(2) : 'N/A';
-                    row.insertCell().textContent = isNumeric(result["Free Scheme"]) ? Number(result["Free Scheme"]).toFixed(2) : 'N/A';
-                    row.insertCell().textContent = isNumeric(result.MRP) ? Number(result.MRP).toFixed(2) : 'N/A';
-                    row.insertCell().innerHTML = highlightMatch(result.CONTENT, input);
-                    row.insertCell().textContent = result.CASE || 'N/A';
-                    row.insertCell().textContent = result.totalMatches;
-                });
-            }
+            updateTable(results);
         }
 
+        // Update Table
+        function updateTable(results) {
+            const tbody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '';
+
+            if (results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9">No records found.</td></tr>';
+                return;
+            }
+
+            results.forEach(result => {
+                const row = tbody.insertRow();
+                row.insertCell().innerHTML = highlightMatch(result.BRAND, terms);
+                row.insertCell().innerHTML = highlightMatch(result.COMPANY, terms);
+                row.insertCell().textContent = result.PACK || 'N/A';
+                row.insertCell().textContent = formatNumeric(result.RATE);
+                row.insertCell().textContent = formatNumeric(result["Free Scheme"]);
+                row.insertCell().textContent = formatNumeric(result.MRP);
+                row.insertCell().innerHTML = highlightMatch(result.CONTENT, terms);
+                row.insertCell().textContent = result.CASE || 'N/A';
+                row.insertCell().textContent = result.totalMatches;
+            });
+        }
+
+        // Reset Search
         function resetSearch() {
             document.getElementById('searchBar').value = '';
             showInitialMessage();
         }
 
+        // Show Initial Message
         function showInitialMessage() {
-            const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
-            resultsTable.innerHTML = '<tr><td colspan="9">Waiting for input...</td></tr>';
+            const tbody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            tbody.innerHTML = '<tr><td colspan="9">Waiting for input...</td></tr>';
         }
 
-        function isNumeric(value) {
-            return !isNaN(parseFloat(value)) && isFinite(value);
+        // Utility Functions
+        function formatNumeric(value) {
+            return isNaN(parseFloat(value)) ? 'N/A' : Number(value).toFixed(2);
         }
 
-        function highlightMatch(text, input) {
+        function highlightMatch(text, terms) {
             if (!text) return 'N/A';
-            const regex = new RegExp(`(${input})`, 'gi');
-            return text.toString().replace(regex, '<span class="highlight">$1</span>');
+            terms.forEach(term => {
+                const regex = new RegExp(`(${term})`, 'gi');
+                text = text.toString().replace(regex, '<span class="highlight">$1</span>');
+            });
+            return text;
         }
     </script>
 </body>
+
 </html>

@@ -277,15 +277,26 @@ function search(input) {
             return !isNaN(parseFloat(value)) && isFinite(value);
         }
 
-        function highlightMatch(text, terms) {
-            if (!text) return 'N/A';
-            let highlightedText = text;
-            terms.forEach(term => {
-                const regex = new RegExp(`(${term})`, 'gi');
-                highlightedText = highlightedText.toString().replace(regex, '<span class="highlight">$1</span>');
-            });
-            return highlightedText;
+function highlightMatch(text, terms) {
+    if (!text) return 'N/A';
+
+    // Escape HTML special chars first
+    let safeText = text.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    // Apply highlighting only after escaping
+    terms.forEach(term => {
+        if (term) {
+            const regex = new RegExp(`(${term})`, 'gi');
+            safeText = safeText.replace(regex, '<span class="highlight">$1</span>');
         }
+    });
+
+    return safeText;
+}
+
     </script>
 </body>
 

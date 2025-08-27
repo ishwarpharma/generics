@@ -1,305 +1,463 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-</head>
-    
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ishwar Pharma Gx Search</title>
-    <style>
-        body {
-            font-family: Calibri, sans-serif;
-            font-size: 10pt;
-            text-align: center;
-            background-color: #F7F7F7;
-            margin: 0;
-            padding: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ishwar Pharma Gx Search</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-        h1 {
-            font-size: 18pt;
-            font-weight: bold;
-            margin: 20px 0;
-            color: #4A90E2;
-        }
+  <!-- XLSX for read/write -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- jsPDF for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-        #searchBar {
-            width: 80%;
-            padding: 12px;
-            font-size: 14pt;
-            border: 2px solid #28A745;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            background: #FFFFFF;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 14pt;
-            background-color: #4A90E2;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #357ABD;
-        }
-
-        table {
-            width: 100%;
-            max-width: 95%;
-            border-collapse: collapse;
-            margin: 20px auto;
-            table-layout: auto;
-            word-wrap: break-word;
-            background-color: #FFFFFF;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        table,
-        th,
-        td {
-            border: 1px solid #ddd;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        th {
-            background-color: #4A90E2;
-            color: white;
-        }
-
-        tr:nth-child(even) {
-            background-color: #F7F7F7;
-        }
-
-        tr:hover {
-            background-color: #E1F5FE;
-        }
-
-        .highlight {
-            background-color: yellow;
-            font-weight: bold;
-        }
-
-        .red {
-            color: red;
-            font-weight: bold;
-        }
-
-        #recordCount {
-            margin: 10px 0;
-            font-weight: bold;
-            color: #333333;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            #searchBar {
-                width: 95%;
-                font-size: 12pt;
-            }
-
-            button {
-                font-size: 12pt;
-            }
-
-            th,
-            td {
-                font-size: 10pt;
-                padding: 8px;
-            }
-
-            h1 {
-                font-size: 14pt;
-            }
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
-</head>
-
-<body>
-    <h1>✨ Ishwar Pharma Gx Search ✨</h1>
-    <div id="recordCount">Number of records: 0</div>
-    <br>
-    <div style="position: relative; display: inline-block; width: 100%;">
-        <input type="text" id="searchBar" placeholder="🔍 Start typing to search..." oninput="onInputChange()">
-    </div>
-    <br><br>
-    <button onclick="resetSearch()">↺ Reset</button>
-    <br><br>
-    <table id="resultsTable">
-        <thead>
-            <tr>
-                <th>Brand 🎉</th>
-                <th>Company 💼</th>
-                <th>Pack 📦</th>
-                <th>List Rate 💸</th>
-                <th>Bulk Rate 💵</th>
-                <th>MRP 🎁</th>
-                <th>Content 🌿</th>
-                <th>Case 🗲</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td colspan="8">Waiting for input...</td>
-            </tr>
-        </tbody>
-    </table>
-    <script>
-        let jsonData = [];
-
-        window.onload = loadData;
-
-        function loadData() {
-            const file = '4IshwarApp.xlsx';
-            const reader = new FileReader();
-            fetch(file).then(response => {
-                if (response.ok) return response.blob();
-                else throw new Error('File not found');
-            }).then(blob => {
-                const fileReader = new FileReader();
-                fileReader.onload = (e) => {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    jsonData = XLSX.utils.sheet_to_json(sheet);
-                    document.getElementById('recordCount').textContent = `Number of records: ${jsonData.length}`;
-                };
-                fileReader.readAsArrayBuffer(blob);
-            }).catch(error => {
-                console.error('Error loading file:', error);
-                document.getElementById('recordCount').textContent = 'Error loading data';
-            });
-        }
-
-        function onInputChange() {
-            const searchBar = document.getElementById('searchBar');
-            const input = searchBar.value.toLowerCase();
-            if (input.length >= 3) {
-                search(input);
-            } else {
-                showInitialMessage();
-            }
-        }
-
-
-function search(input) {
-    const terms = input.split(' ').filter(term => term);
-    const results = jsonData.filter(item => {
-        return terms.every(term => {
-            return ['BRAND', 'COMPANY', 'CONTENT'].some(key =>
-                item[key] && item[key].toString().toLowerCase().includes(term)
-            );
-        });
-    });
-
-    // Sorting with score + content length + brand name
-    results.sort((a, b) => {
-        const getScore = (item) => {
-            let score = 0;
-            const brand = item.BRAND ? item.BRAND.toLowerCase() : "";
-            const company = item.COMPANY ? item.COMPANY.toLowerCase() : "";
-            const content = item.CONTENT ? item.CONTENT.toLowerCase() : "";
-
-            terms.forEach(term => {
-                if (brand.includes(term)) score += 3;    // highest weight
-                if (company.includes(term)) score += 2;  // medium weight
-                if (content.includes(term)) score += 1;  // lowest weight
-            });
-
-            return { score, contentLength: content.length };
-        };
-
-        const aData = getScore(a);
-        const bData = getScore(b);
-
-        // Higher score first
-        if (aData.score !== bData.score) {
-            return bData.score - aData.score;
-        }
-
-        // Then shorter content length
-        if (aData.contentLength !== bData.contentLength) {
-            return aData.contentLength - bData.contentLength;
-        }
-
-        // Finally alphabetical by BRAND
-        return a.BRAND.localeCompare(b.BRAND);
-    });
-
-    // Render results
-    const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
-    resultsTable.innerHTML = '';
-    if (results.length === 0) {
-        resultsTable.innerHTML = '<tr><td colspan="8">No records found.</td></tr>';
+  <style>
+    :root{
+      --brand:#2563eb;   /* blue */
+      --accent:#22c55e;  /* green */
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --highlight:#fff4cc; /* soft yellow */
+      --border:#e5e7eb;
     }
-    results.forEach(result => {
-        const row = resultsTable.insertRow();
-        row.insertCell().innerHTML = highlightMatch(result.BRAND, terms);
-        row.insertCell().innerHTML = highlightMatch(result.COMPANY, terms);
-        row.insertCell().textContent = result.PACK || 'N/A';
-        row.insertCell().textContent = isNumeric(result.RATE) ? Number(result.RATE).toFixed(2) : 'N/A';
-        const freeSchemeCell = row.insertCell();
-        freeSchemeCell.textContent = isNumeric(result["Free Scheme"]) ? Number(result["Free Scheme"]).toFixed(2) : 'N/A';
-        freeSchemeCell.classList.add('red');
-        row.insertCell().textContent = isNumeric(result.MRP) ? Number(result.MRP).toFixed(2) : 'N/A';
-        row.insertCell().innerHTML = highlightMatch(result.CONTENT, terms);
-        row.insertCell().textContent = result.CASE || 'N/A';
+    *{box-sizing:border-box}
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Calibri, Arial, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      margin:0;
+    }
+
+    /* Sticky top bar */
+    .topbar{
+      position: sticky;
+      top:0;
+      z-index: 50;
+      background: linear-gradient(180deg, #ffffff 0%, #ffffffcc 100%);
+      backdrop-filter: blur(6px);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 16px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:space-between;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; font-weight:700; color:var(--brand);
+    }
+    .brand i{color:var(--accent)}
+    .controls{
+      display:flex; gap:10px; align-items:center; flex: 1 1 520px;
+    }
+    #searchBar{
+      flex:1;
+      min-width: 260px;
+      padding: 12px 16px;
+      border:2px solid var(--brand);
+      border-radius: 999px;
+      background: var(--card);
+      outline: none;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.08);
+      transition: box-shadow .2s, border-color .2s;
+      font-size:16px;
+    }
+    #searchBar:focus{
+      border-color: var(--accent);
+      box-shadow: 0 6px 16px rgba(34,197,94,0.15);
+    }
+    .buttons{display:flex; gap:8px; flex-wrap:wrap}
+    button{
+      border:1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor:pointer;
+      transition: .15s;
+      font-weight:600;
+    }
+    button.primary{
+      background: var(--brand);
+      color:#fff;
+      border-color: var(--brand);
+    }
+    button:hover{transform: translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.06)}
+    .counts{
+      width:100%;
+      padding: 0 16px 12px;
+      color: var(--muted);
+      display:flex; gap:12px; align-items:center; justify-content:flex-start;
+      max-width:1200px; margin:0 auto;
+      font-size: 13px;
+    }
+
+    /* Table */
+    .table-wrap{max-width:1200px; margin: 16px auto; padding: 0 16px;}
+    table{
+      width:100%;
+      border-collapse: collapse;
+      background: var(--card);
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+      border-radius: 14px;
+      overflow:hidden;
+    }
+    th, td{padding: 12px 10px; border-bottom:1px solid var(--border); text-align:left}
+    th{
+      background: #eef2ff;
+      color:#111827;
+      position: sticky;
+      top: 64px; /* below sticky header */
+      z-index: 5;
+      user-select:none;
+    }
+    th.sortable{cursor:pointer}
+    th.sortable .chev{opacity:.5; margin-left:6px; font-size:12px}
+    tr:hover td{background:#f9fbff}
+    tr:nth-child(even) td{background:#fcfdff}
+
+    .num{text-align:right}
+    .red{color:#dc2626; font-weight:700}
+    .highlight{background: var(--highlight); padding: 0 2px; border-radius: 3px; font-weight:700}
+
+    .empty{
+      background: var(--card);
+      color: var(--muted);
+      text-align:center; padding: 20px;
+    }
+
+    /* Mobile cards view */
+    @media (max-width: 680px){
+      table, thead, tbody, th, tr, td{display:block}
+      thead{display:none}
+      tr{
+        margin:12px 0;
+        border:1px solid var(--border);
+        border-radius:12px;
+        overflow:hidden;
+        background: var(--card);
+        box-shadow: 0 4px 10px rgba(0,0,0,.05);
+      }
+      td{
+        border:none; border-bottom:1px solid var(--border);
+        display:flex; justify-content:space-between; gap:12px;
+        padding:10px 12px;
+      }
+      td:last-child{border-bottom:none}
+      td::before{
+        content: attr(data-label);
+        font-weight:700; color:#374151;
+        flex: 0 0 40%;
+      }
+      .num{text-align:right}
+    }
+  </style>
+</head>
+<body>
+  <!-- Sticky header -->
+  <div class="topbar">
+    <div class="wrap">
+      <div class="brand"><i class="fa-solid fa-capsules"></i> Ishwar Pharma Gx Search</div>
+      <div class="controls">
+        <input id="searchBar" type="text" placeholder="Search by Brand, Company, Content…" oninput="onInputChange()" />
+        <div class="buttons">
+          <button class="primary" onclick="resetSearch()"><i class="fa-solid fa-rotate"></i> Reset</button>
+          <button onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> CSV</button>
+          <button onclick="exportXLSX()"><i class="fa-regular fa-file-excel"></i> Excel</button>
+          <button onclick="exportPDF()"><i class="fa-regular fa-file-pdf"></i> PDF</button>
+        </div>
+      </div>
+    </div>
+    <div class="counts">
+      <span id="recordCount">Records: 0</span>
+      <span id="matchCount"></span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th class="sortable" data-key="BRAND">Brand <span class="chev">↕</span></th>
+          <th class="sortable" data-key="COMPANY">Company <span class="chev">↕</span></th>
+          <th>Pack</th>
+          <th class="sortable num" data-key="RATE">List Rate <span class="chev">↕</span></th>
+          <th class="sortable num" data-key="Free Scheme">Bulk Rate <span class="chev">↕</span></th>
+          <th class="sortable num" data-key="MRP">MRP <span class="chev">↕</span></th>
+          <th class="sortable" data-key="CONTENT">Content <span class="chev">↕</span></th>
+          <th>Case</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td class="empty" colspan="8">Waiting for input…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<script>
+  let jsonData = [];
+  let currentResults = [];
+  let lastTerms = [];
+  let sortState = { key: null, dir: 'asc' }; // for header click sorting
+
+  window.onload = () => {
+    loadData();
+    bindHeaderSorting();
+  };
+
+  function loadData() {
+    const file = '4IshwarApp.xlsx';
+    fetch(file).then(r => {
+      if (r.ok) return r.blob();
+      throw new Error('File not found');
+    }).then(blob => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        jsonData = XLSX.utils.sheet_to_json(sheet);
+        document.getElementById('recordCount').textContent = `Records: ${jsonData.length}`;
+      };
+      reader.readAsArrayBuffer(blob);
+    }).catch(err => {
+      console.error(err);
+      document.getElementById('recordCount').textContent = 'Error loading data';
     });
-}
+  }
 
+  function onInputChange() {
+    const input = document.getElementById('searchBar').value.trim().toLowerCase();
+    if (input.length >= 3) {
+      search(input);
+    } else {
+      currentResults = [];
+      updateMatchCount();
+      showInitialMessage();
+    }
+  }
 
-        function resetSearch() {
-            document.getElementById('searchBar').value = '';
-            showInitialMessage();
-        }
+  function search(input) {
+    const terms = input.split(/\s+/).filter(Boolean);
+    lastTerms = terms;
 
-        function showInitialMessage() {
-            const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
-            resultsTable.innerHTML = '<tr><td colspan="8">Waiting for input...</td></tr>';
-        }
+    const filtered = jsonData.filter(item => {
+      return terms.every(term =>
+        ['BRAND', 'COMPANY', 'CONTENT'].some(key =>
+          item[key] && item[key].toString().toLowerCase().includes(term)
+        )
+      );
+    });
 
-        function isNumeric(value) {
-            return !isNaN(parseFloat(value)) && isFinite(value);
-        }
+    // Score: BRAND>COMPANY>CONTENT; tie → shorter CONTENT; then BRAND A→Z
+    filtered.sort((a,b)=>{
+      const score = (it) => {
+        let s=0;
+        const brand = (it.BRAND||'').toLowerCase();
+        const company = (it.COMPANY||'').toLowerCase();
+        const content = (it.CONTENT||'').toLowerCase();
+        terms.forEach(t=>{
+          if (brand.includes(t)) s+=3;
+          if (company.includes(t)) s+=2;
+          if (content.includes(t)) s+=1;
+        });
+        return { s, clen: content.length, b: (it.BRAND||'') };
+      };
+      const A=score(a), B=score(b);
+      if (A.s!==B.s) return B.s-A.s;
+      if (A.clen!==B.clen) return A.clen-B.clen;
+      return A.b.localeCompare(B.b);
+    });
 
-function highlightMatch(text, terms) {
+    currentResults = filtered;
+    // If user clicked a header sort, apply it on top of ranking
+    if (sortState.key) applyHeaderSort();
+    render();
+  }
+
+  function resetSearch(){
+    document.getElementById('searchBar').value='';
+    currentResults = [];
+    lastTerms = [];
+    sortState = { key:null, dir:'asc' };
+    updateMatchCount();
+    showInitialMessage();
+  }
+
+  function showInitialMessage(){
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = `<tr><td class="empty" colspan="8">Waiting for input…</td></tr>`;
+  }
+
+  function isNumeric(v){ return !isNaN(parseFloat(v)) && isFinite(v); }
+
+  function escapeHTML(str){
+    return str.toString()
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;");
+  }
+
+  function highlightMatch(text, terms){
     if (!text) return 'N/A';
-
-    // Escape HTML special chars first
-    let safeText = text.toString()
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-    // Apply highlighting only after escaping
-    terms.forEach(term => {
-        if (term) {
-            const regex = new RegExp(`(${term})`, 'gi');
-            safeText = safeText.replace(regex, '<span class="highlight">$1</span>');
-        }
+    let safe = escapeHTML(text);
+    terms.forEach(t=>{
+      if(!t) return;
+      const re = new RegExp(`(${t})`,'gi');
+      safe = safe.replace(re,'<span class="highlight">$1</span>');
     });
+    return safe;
+  }
 
-    return safeText;
-}
+  function render(){
+    const tb = document.getElementById('tbody');
+    tb.innerHTML = '';
+    updateMatchCount();
 
-    </script>
+    if (!currentResults.length){
+      tb.innerHTML = `<tr><td class="empty" colspan="8">No records found.</td></tr>`;
+      return;
+    }
+
+    currentResults.forEach(r=>{
+      const tr = document.createElement('tr');
+
+      const c1 = tr.insertCell(); c1.setAttribute('data-label','Brand');
+      c1.innerHTML = highlightMatch(r.BRAND||'N/A', lastTerms);
+
+      const c2 = tr.insertCell(); c2.setAttribute('data-label','Company');
+      c2.innerHTML = highlightMatch(r.COMPANY||'N/A', lastTerms);
+
+      const c3 = tr.insertCell(); c3.setAttribute('data-label','Pack');
+      c3.textContent = r.PACK || 'N/A';
+
+      const c4 = tr.insertCell(); c4.setAttribute('data-label','List Rate'); c4.className='num';
+      c4.textContent = isNumeric(r.RATE) ? Number(r.RATE).toFixed(2) : 'N/A';
+
+      const c5 = tr.insertCell(); c5.setAttribute('data-label','Bulk Rate'); c5.className='num red';
+      c5.textContent = isNumeric(r["Free Scheme"]) ? Number(r["Free Scheme"]).toFixed(2) : 'N/A';
+
+      const c6 = tr.insertCell(); c6.setAttribute('data-label','MRP'); c6.className='num';
+      c6.textContent = isNumeric(r.MRP) ? Number(r.MRP).toFixed(2) : 'N/A';
+
+      const c7 = tr.insertCell(); c7.setAttribute('data-label','Content');
+      c7.innerHTML = highlightMatch(r.CONTENT||'N/A', lastTerms);
+
+      const c8 = tr.insertCell(); c8.setAttribute('data-label','Case');
+      c8.textContent = r.CASE || 'N/A';
+
+      tb.appendChild(tr);
+    });
+  }
+
+  function updateMatchCount(){
+    const el = document.getElementById('matchCount');
+    if (!lastTerms.length){ el.textContent=''; return; }
+    el.textContent = `(showing ${currentResults.length} matches)`;
+  }
+
+  /* ----- Header sorting (clickable) ----- */
+  function bindHeaderSorting(){
+    document.querySelectorAll('th.sortable').forEach(th=>{
+      th.addEventListener('click', ()=> {
+        const key = th.dataset.key;
+        if (sortState.key === key){
+          sortState.dir = (sortState.dir === 'asc') ? 'desc' : 'asc';
+        } else {
+          sortState.key = key;
+          sortState.dir = 'asc';
+        }
+        applyHeaderSort();
+        render();
+      });
+    });
+  }
+  function applyHeaderSort(){
+    if (!sortState.key || !currentResults.length) return;
+    const { key, dir } = sortState;
+    currentResults.sort((a,b)=>{
+      const av = a[key]; const bv = b[key];
+      const na = isNumeric(av) ? Number(av) : null;
+      const nb = isNumeric(bv) ? Number(bv) : null;
+
+      let cmp;
+      if (na!==null && nb!==null) cmp = na - nb;
+      else cmp = (av||'').toString().localeCompare((bv||'').toString(), undefined, {sensitivity:'base'});
+
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  /* ----- Export helpers (use currentResults) ----- */
+  function rowsForExport(){
+    const cols = ['BRAND','COMPANY','PACK','RATE','Free Scheme','MRP','CONTENT','CASE'];
+    return currentResults.map(r=>({
+      BRAND: r.BRAND || '',
+      COMPANY: r.COMPANY || '',
+      PACK: r.PACK || '',
+      RATE: isNumeric(r.RATE) ? Number(r.RATE).toFixed(2) : '',
+      'Free Scheme': isNumeric(r['Free Scheme']) ? Number(r['Free Scheme']).toFixed(2) : '',
+      MRP: isNumeric(r.MRP) ? Number(r.MRP).toFixed(2) : '',
+      CONTENT: r.CONTENT || '',
+      CASE: r.CASE || ''
+    }));
+  }
+
+  function exportCSV(){
+    const data = rowsForExport();
+    if (!data.length){ alert('No filtered results to export.'); return; }
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    downloadFile(csv, 'gx-results.csv', 'text/csv;charset=utf-8;');
+  }
+
+  function exportXLSX(){
+    const data = rowsForExport();
+    if (!data.length){ alert('No filtered results to export.'); return; }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, 'Results');
+    const out = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    const blob = new Blob([out], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url = URL.createObjectURL(blob);
+    triggerDownload(url, 'gx-results.xlsx');
+  }
+
+  async function exportPDF(){
+    const data = rowsForExport();
+    if (!data.length){ alert('No filtered results to export.'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape'});
+    doc.setFontSize(12);
+    doc.text('Ishwar Pharma Gx — Filtered Results', 14, 14);
+    const headers = [['Brand','Company','Pack','List Rate','Bulk Rate','MRP','Content','Case']];
+    const body = data.map(r=>[r.BRAND,r.COMPANY,r.PACK,r.RATE,r['Free Scheme'],r.MRP,r.CONTENT,r.CASE]);
+    doc.autoTable({ head: headers, body, startY: 20, styles:{fontSize:8} });
+    doc.save('gx-results.pdf');
+  }
+
+  function downloadFile(content, filename, type){
+    const blob = new Blob([content], {type});
+    const url = URL.createObjectURL(blob);
+    triggerDownload(url, filename);
+  }
+  function triggerDownload(url, filename){
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+  }
+</script>
 </body>
-
 </html>
-
-

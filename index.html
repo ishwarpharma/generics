@@ -281,19 +281,13 @@ function search(input) {
 function highlightMatch(text, terms) {
     if (!text) return 'N/A';
 
-    // Escape HTML special chars first
-    let safeText = text.toString()
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
+    let safeText = text.toString();
 
-    // Apply highlighting after escaping
+    // For each search term, wrap matches in <span>
     terms.forEach(term => {
         if (term) {
             const regex = new RegExp(`(${term})`, 'gi');
-            safeText = safeText.replace(regex, (match) => {
-                return `<span class="highlight">${match}</span>`;
-            });
+            safeText = safeText.replace(regex, '<span class="highlight">$1</span>');
         }
     });
 

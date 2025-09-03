@@ -277,17 +277,23 @@ function search(input) {
             return !isNaN(parseFloat(value)) && isFinite(value);
         }
 
-
 function highlightMatch(text, terms) {
     if (!text) return 'N/A';
 
+    // Convert to string
     let safeText = text.toString();
 
-    // For each search term, wrap matches in <span>
+    // Escape HTML first (so raw <, > don’t break)
+    safeText = safeText
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+
+    // Then apply highlighting
     terms.forEach(term => {
         if (term) {
             const regex = new RegExp(`(${term})`, 'gi');
-            safeText = safeText.replace(regex, '<span class="highlight">$1</span>');
+            safeText = safeText.replace(regex, `<span class="highlight">$1</span>`);
         }
     });
 

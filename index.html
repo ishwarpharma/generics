@@ -277,6 +277,7 @@ function search(input) {
             return !isNaN(parseFloat(value)) && isFinite(value);
         }
 
+
 function highlightMatch(text, terms) {
     if (!text) return 'N/A';
 
@@ -286,11 +287,13 @@ function highlightMatch(text, terms) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
 
-    // Apply highlighting only after escaping
+    // Apply highlighting after escaping
     terms.forEach(term => {
         if (term) {
             const regex = new RegExp(`(${term})`, 'gi');
-            safeText = safeText.replace(regex, '<span class="highlight">$1</span>');
+            safeText = safeText.replace(regex, (match) => {
+                return `<span class="highlight">${match}</span>`;
+            });
         }
     });
 
